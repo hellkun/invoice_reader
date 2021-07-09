@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:zxing_lib/common.dart';
 import 'package:zxing_lib/qrcode.dart';
@@ -12,57 +15,32 @@ Future<Result> parseResultFromInvoice(
   return compute(_parseResultFromInvoice, {
     'invoice': invoice,
     'tryCrop': tryCrop,
-  }).then((value) {
-    if (value == null) {
-      return Future.error('bitmap null');
-    }
-
-    return value;
   });
 }
 
 final _reader = QRCodeReader();
 
-Result? _parseResultFromInvoice(Map<String, dynamic> parameter) {
+Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
   final invoice = parameter['invoice'] as InvoiceSource;
   final tryCrop = parameter['tryCrop'] as bool;
 
-  final source = _getLuminanceSource(invoice);
-  if (source == null) {
-    return null;
-  }
+  final source = await _createFromBytes(invoice.imageSource);
 
   try {
     final bitmap = _parseFromLuminanceSource(source, tryCrop);
-    return bitmap != null ? _reader.decode(bitmap) : null;
+    return _reader.decode(bitmap);
   } on Exception {
     if (tryCrop) {
       print('Failed to decode with tryCrop=$tryCrop, retry without cropping');
 
       final bitmap = _parseFromLuminanceSource(source, false);
-      return bitmap != null ? _reader.decode(bitmap) : null;
+      return _reader.decode(bitmap);
     }
     rethrow;
   }
 }
 
-LuminanceSource? _getLuminanceSource(InvoiceSource invoice) {
-  var markTime = DateTime.now().millisecondsSinceEpoch;
-
-  var image = _decodeImage(invoice);
-
-  final afterDecodeTime = DateTime.now().millisecondsSinceEpoch;
-  print('Decoding image takes ${afterDecodeTime - markTime}ms');
-  markTime = afterDecodeTime;
-
-  if (image == null) {
-    return null;
-  }
-
-  return RGBLuminanceSource(image.width, image.height, image.data);
-}
-
-BinaryBitmap? _parseFromLuminanceSource(LuminanceSource source, bool tryCrop) {
+BinaryBitmap _parseFromLuminanceSource(LuminanceSource source, bool tryCrop) {
   // 二维码在左上角，可以crop一次
   if (source.isCropSupported && tryCrop) {
     print('crop source');
@@ -72,8 +50,21 @@ BinaryBitmap? _parseFromLuminanceSource(LuminanceSource source, bool tryCrop) {
   return BinaryBitmap(HybridBinarizer(source));
 }
 
-Image? _decodeImage(InvoiceSource invoice) {
-  return invoice.name != null
-      ? decodeNamedImage(invoice.imageSource, invoice.name!)
-      : decodeImage(invoice.imageSource);
+Future<LuminanceSource> _createFromBytes(Uint8List src) {
+  final completer = Completer<LuminanceSource>();
+
+  ui.decodeImageFromList(src, (result) async {
+    try {
+      final data = (await result.toByteData())!.buffer.asInt32List();
+      completer.complete(RGBLuminanceSource(
+        result.width,
+        result.height,
+        data,
+      ));
+    } catch (e) {
+      completer.completeError(e);
+    }
+  });
+
+  return completer.future;
 }
