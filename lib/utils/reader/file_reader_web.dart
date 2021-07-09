@@ -33,6 +33,8 @@ class InvoiceReaderImpl implements InvoiceReader {
       }
     });
 
+    reader.readAsArrayBuffer(source);
+
     return completer.future;
   }
 }
