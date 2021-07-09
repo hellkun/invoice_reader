@@ -5,16 +5,31 @@ import 'package:invoice_reader/utils/pdf.dart';
 import '../model/invoice.dart';
 import 'package:flutter/material.dart';
 
-class InvoiceCard extends StatelessWidget {
+class InvoiceCard extends StatefulWidget {
   final InvoiceSource source;
 
   final VoidCallback? onRemove;
 
-  const InvoiceCard({
+  InvoiceCard({
     Key? key,
     required this.source,
     required this.onRemove,
   }) : super(key: key);
+
+  @override
+  _InvoiceCardState createState() => _InvoiceCardState();
+}
+
+class _InvoiceCardState extends State<InvoiceCard> {
+  Future<Uint8List>? _future;
+
+  @override
+  void initState() {
+    _future = widget.source.type == InvoiceSourceType.pdf
+        ? readPdfAsImage(widget.source.imageSource)
+        : null;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +48,15 @@ class InvoiceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Text(source.name ?? '...'),
+                  child: Text(widget.source.name ?? '...'),
                 ),
-                if (onRemove != null)
+                if (widget.onRemove != null)
                   GestureDetector(
                     child: Icon(
                       Icons.delete,
                       color: Theme.of(context).colorScheme.error,
                     ),
-                    onTap: onRemove,
+                    onTap: widget.onRemove,
                   ),
               ],
             ),
@@ -57,12 +72,13 @@ class InvoiceCard extends StatelessWidget {
           fit: BoxFit.cover,
         );
 
-    if (source.type == InvoiceSourceType.image)
-      return _buildMemoryImage(source.imageSource);
+    if (widget.source.type == InvoiceSourceType.image)
+      return _buildMemoryImage(widget.source.imageSource);
 
     // PDF
+    assert(_future != null);
     return FutureBuilder<Uint8List>(
-      future: readPdfAsImage(source.imageSource),
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
