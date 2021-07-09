@@ -7,7 +7,19 @@ class InvoiceSource {
 
   final String? name;
 
-  InvoiceSource(this.imageSource, {this.name});
+  final InvoiceSourceType type;
+
+  InvoiceSource(
+    this.imageSource, {
+    this.name,
+    this.type = InvoiceSourceType.image,
+  });
+}
+
+enum InvoiceSourceType {
+  image,
+
+  pdf,
 }
 
 class Invoice {

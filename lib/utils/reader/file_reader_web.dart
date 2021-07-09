@@ -18,14 +18,12 @@ class InvoiceReaderImpl implements InvoiceReader {
       var result = reader.result;
       String? name = (source as File).name;
       if (result is Uint8List) {
-        if (source.type == 'application/pdf') {
-          result = await readPdfAsImage(result);
-          name = '.png';
-        }
-
         completer.complete(InvoiceSource(
           result,
           name: name,
+          type: source.type == 'application/pdf'
+              ? InvoiceSourceType.pdf
+              : InvoiceSourceType.image,
         ));
       } else {
         completer
