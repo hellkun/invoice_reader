@@ -1,16 +1,15 @@
-# invoice_reader
+# 电子发票解析器
 
-A new Flutter project.
+## 功能说明
 
-## Getting Started
+一个功能简单的电子发票解析器，主要通过读取电子发票的二维码解析发票信息。
 
-This project is a starting point for a Flutter application.
+支持的发票源格式：
++ 图片（JPG、PNG等）
++ PDF（暂未实现）
+ 
+并将解析出的电子发票信息进行归集，形成一个Zip压缩包，包内包括：
++ 包含发票信息的Excel表格
++ 重命名后的发票文件
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+主要就是自用项目，降低手工整理报销凭证的复杂度。
