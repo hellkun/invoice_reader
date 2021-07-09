@@ -1,10 +1,10 @@
-import 'dart:html';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:invoice_reader/model/invoice.dart';
+import 'package:invoice_reader/utils/reader/file_reader.dart';
 import 'package:native_pdf_renderer/native_pdf_renderer.dart';
 
 class InvoiceProvideScreen extends StatefulWidget {
@@ -126,22 +126,30 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
   }
 
   void _onContentDropped(dynamic content) {
-    if (content is File) {
-      print('File = ${content.name}, '
-          'type = ${content.type}, '
-          'size = ${content.size}');
+    print('File = ${content.name}, '
+        'type = ${content.type}, '
+        'size = ${content.size}');
 
-      if (!kAcceptFileTypes.hasMatch(content.type)) {
-        print('not an image');
-        // TODO: 处理不支持的文件
-        return;
-      }
+    if (!kAcceptFileTypes.hasMatch(content.type)) {
+      print('not an image');
+      // TODO: 处理不支持的文件
+      return;
+    }
 
-      final reader = FileReader();
+    InvoiceReader().read(content).then((value) {
+      print('read value = ${value.name}');
+      widget.onAdd(value);
+    });
+
+    /* final reader = FileReader();
+      reader.onLoadStart.listen((event) {
+        print('onLoadStart');
+      });
       reader.onLoadEnd.listen((event) async {
         print('onLoadEnd: $event');
         var result = reader.result;
         String? name = content.name;
+
         if (result is Uint8List) {
           if (content.type == 'application/pdf') {
             result = await _readPdfAsImage(result);
@@ -154,19 +162,11 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
           );
 
           widget.onAdd(source);
-          /* Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => PreviewScreen(
-              source: [source],
-            ),
-          )); */
         } else {
           print('result type = ${result.runtimeType}');
         }
-      });
-      reader.readAsArrayBuffer(content);
-    } else {
-      print('unknown content: ${content.runtimeType}');
-    }
+      }); 
+      reader.readAsArrayBuffer(content); */
   }
 }
 
