@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:invoice_reader/model/invoice.dart';
+import 'package:invoice_reader/utils/pdf.dart';
 import 'package:zxing_lib/common.dart';
 import 'package:zxing_lib/qrcode.dart';
 import 'package:zxing_lib/zxing.dart';
@@ -24,7 +25,11 @@ Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
   final invoice = parameter['invoice'] as InvoiceSource;
   final tryCrop = parameter['tryCrop'] as bool;
 
-  final source = await _createFromBytes(invoice.imageSource);
+  final imgSrc = invoice.type == InvoiceSourceType.image
+      ? invoice.imageSource
+      : await readPdfAsImage(invoice.imageSource);
+
+  final source = await _createFromBytes(imgSrc);
 
   try {
     final bitmap = _parseFromLuminanceSource(source, tryCrop);
