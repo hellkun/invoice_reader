@@ -145,33 +145,6 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
     _invoiceReader.read(content).then((value) {
       widget.onAdd(value);
     });
-
-    /* final reader = FileReader();
-      reader.onLoadStart.listen((event) {
-        print('onLoadStart');
-      });
-      reader.onLoadEnd.listen((event) async {
-        print('onLoadEnd: $event');
-        var result = reader.result;
-        String? name = content.name;
-
-        if (result is Uint8List) {
-          if (content.type == 'application/pdf') {
-            result = await _readPdfAsImage(result);
-            name = '.png';
-          }
-
-          final source = InvoiceSource(
-            result,
-            name: name,
-          );
-
-          widget.onAdd(source);
-        } else {
-          print('result type = ${result.runtimeType}');
-        }
-      }); 
-      reader.readAsArrayBuffer(content); */
   }
 }
 
