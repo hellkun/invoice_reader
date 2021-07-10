@@ -6,9 +6,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 class ReaderScreen extends StatelessWidget {
+  final String title;
   final ReaderModel _model;
   ReaderScreen({
     Key? key,
+    required this.title,
     List<InvoiceSource>? source,
   })  : _model = ReaderModel(
           sources: source ?? const [],
@@ -71,7 +73,7 @@ class ReaderScreen extends StatelessWidget {
             future: PackageInfo.fromPlatform(),
             builder: (context, snapshot) {
               return Text(
-                '解析电子发票'
+                '$title'
                 '\n'
                 '${snapshot.data?.version ?? ""}',
                 style: theme.textTheme.headline6,

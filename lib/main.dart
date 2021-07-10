@@ -15,8 +15,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final title = '电子发票归档';
     return MaterialApp(
-      title: '电子发票归档',
+      title: title,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -30,7 +31,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'NotoSans',
       ),
-      home: ReaderScreen(),
+      home: ReaderScreen(
+        title: title,
+      ),
     );
   }
 }
