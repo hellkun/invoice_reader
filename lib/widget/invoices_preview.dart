@@ -6,7 +6,7 @@ import '../widget/invoice_card.dart';
 class InvoicesPreview extends StatelessWidget {
   static const _kMinCardWidth = 360.0;
 
-  final List<InvoiceSource> sourcesOfInvoices;
+  final Iterable<InvoiceSource> sourcesOfInvoices;
 
   final ValueChanged<InvoiceSource>? onRemove;
 
@@ -26,35 +26,32 @@ class InvoicesPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      color: Colors.black12,
-      child: Column(
-        children: [
-          _buildActionBar(theme),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: width ~/ _kMinCardWidth,
-                mainAxisSpacing: 8.0,
-                crossAxisSpacing: 8.0,
-                childAspectRatio: 4 / 3,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              itemCount: sourcesOfInvoices.length,
-              itemBuilder: (context, index) {
-                final item = sourcesOfInvoices[index];
-                return InvoiceCard(
-                  source: item,
-                  onRemove: onRemove != null ? () => onRemove!(item) : null,
-                );
-              },
+    return Column(
+      children: [
+        _buildActionBar(theme),
+        Expanded(
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: width ~/ _kMinCardWidth,
+              mainAxisSpacing: 8.0,
+              crossAxisSpacing: 8.0,
+              childAspectRatio: 4 / 3,
             ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 8.0,
+            ),
+            itemCount: sourcesOfInvoices.length,
+            itemBuilder: (context, index) {
+              final item = sourcesOfInvoices.elementAt(index);
+              return InvoiceCard(
+                source: item,
+                onRemove: onRemove != null ? () => onRemove!(item) : null,
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
