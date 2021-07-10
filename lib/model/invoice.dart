@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:decimal/decimal.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:invoice_reader/utils/decode.dart';
 import 'package:logging/logging.dart';
 
@@ -23,18 +26,43 @@ class InvoiceSource {
     this.type = InvoiceSourceType.image,
   });
 
-  FutureOr<Invoice> getResult() {
+  bool get hasParsed => _result != null;
+  
+  Invoice? peekResult() => _result;
+
+  Future<Invoice> getResult() {
     if (_result != null) {
-      _logger.fine('InvoiceSource $name has been parsed before, reusing the result');
-      return _result!;
+      _logger.fine(
+          'InvoiceSource $name has been parsed before, reusing the result');
+      return SynchronousFuture(_result!);
     }
 
+    _logger.fine('Decoding InvoiceSource $name ...');
     return parseResultFromInvoice(this)
         .then((value) => Invoice.fromQR(value.text))
         .then((value) {
       _result = value;
       return value;
     });
+  }
+
+  @override
+  int get hashCode {
+    final bytesHash = hashList(imageSource);
+    return hashValues(
+      name,
+      bytesHash,
+      type,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! InvoiceSource) return false;
+
+    return other.name == name &&
+        listEquals(other.imageSource, imageSource) &&
+        other.type == type;
   }
 }
 
@@ -60,15 +88,12 @@ class Invoice {
   /// 金额
   final Decimal amount;
 
-  final InvoiceSource? source;
-
   Invoice({
     required this.code,
     required this.serial,
     required this.strDate,
     required this.signature,
     required this.amount,
-    this.source,
   });
 
   DateTime get date {
@@ -80,7 +105,7 @@ class Invoice {
     return DateTime(year, month, day);
   }
 
-  factory Invoice.fromQR(String text, {InvoiceSource? source}) {
+  factory Invoice.fromQR(String text) {
     final contents = text.split(',');
     assert(contents.length == 9);
 
@@ -90,7 +115,6 @@ class Invoice {
       strDate: contents[5],
       signature: contents[6],
       amount: Decimal.parse(contents[4]),
-      source: source,
     );
   }
 
