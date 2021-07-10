@@ -38,8 +38,12 @@ class ReaderModel extends ChangeNotifier {
   }
 
   void addInvoiceSource(InvoiceSource source) {
-    _sourcesOfInvoices.add(source);
-    notifyListeners();
+    if (!_sourcesOfInvoices.contains(source)) {
+      _sourcesOfInvoices.add(source);
+      notifyListeners();
+    } else {
+      _logger.info('File ${source.name} has been added before');
+    }
   }
 
   void removeInvoiceSource(InvoiceSource source) {
