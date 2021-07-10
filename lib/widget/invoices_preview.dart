@@ -8,7 +8,7 @@ import 'package:logging/logging.dart';
 import '../widget/invoice_card.dart';
 
 /// [InvoiceSource]的交互区
-/// 
+///
 /// 可以在这里处理[InvoiceSource]的增加和移除
 class InvoiceInteractionZone extends StatefulWidget {
   /// 新增[InvoiceSource]时的回调
@@ -94,14 +94,16 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
   }
 
   Widget _buildMain(bool showActionBar) {
-    Widget child = LayoutBuilder(
-      builder: (_, constraints) => _InvoicesPreview(
-        width: constraints.maxWidth,
-        sourcesOfInvoices: widget.sourcesOfInvoices,
-        onRemove: widget.onRemove,
-        onRemoveAll: widget.onRemoveAll,
-      ),
-    );
+    Widget child = widget.sourcesOfInvoices.isEmpty
+        ? _buildGuide()
+        : LayoutBuilder(
+            builder: (_, constraints) => _InvoicesPreview(
+              width: constraints.maxWidth,
+              sourcesOfInvoices: widget.sourcesOfInvoices,
+              onRemove: widget.onRemove,
+              onRemoveAll: widget.onRemoveAll,
+            ),
+          );
 
     if (showActionBar) {
       child = Row(
@@ -119,6 +121,42 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
     );
   }
 
+  Widget _buildGuide() {
+    final theme = Theme.of(context);
+
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '电子发票归档',
+            style: theme.textTheme.headline4,
+          ),
+          Text(
+            _controller != null ? '拖拽或点击下方按钮以选择文件' : '点击下方按钮选择文件',
+            style: theme.textTheme.bodyText1,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: ElevatedButton(
+              style: ButtonStyle(
+                textStyle: MaterialStateProperty.all(theme.textTheme.headline6),
+                padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(
+                    horizontal: 48.0,
+                    vertical: 16.0,
+                  ),
+                ),
+              ),
+              onPressed: _pickFile,
+              child: const Text('选择文件'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionSideBar() {
     final theme = Theme.of(context);
     return Padding(
@@ -130,7 +168,7 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
         children: [
           // 添加
           FloatingActionButton(
-            onPressed: () {},
+            onPressed: _pickFile,
             child: Icon(
               Icons.add,
               color: theme.colorScheme.onSecondary,
@@ -154,6 +192,18 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
         ],
       ),
     );
+  }
+
+  /// 选择文件
+  void _pickFile() {
+    if (_controller == null) {
+      // TODO: 非Web，需要使用别的插件处理
+      return;
+    }
+
+    _controller!.pickFiles(multiple: true).then((value) {
+      value.forEach(_onContentDropped);
+    });
   }
 
   void _onContentDropped(dynamic content) {
@@ -189,17 +239,14 @@ class _InvoicesPreview extends StatelessWidget {
     required this.width,
     this.onRemove,
     this.onRemoveAll,
-  }) : super(key: key);
+  })  : assert(sourcesOfInvoices.isNotEmpty),
+        super(key: key);
 
   final double width;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    if (sourcesOfInvoices.isEmpty) {
-      return Container();
-    }
 
     return Column(
       children: [
