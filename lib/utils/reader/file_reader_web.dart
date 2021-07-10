@@ -4,17 +4,21 @@ import 'dart:html';
 import 'dart:typed_data';
 
 import 'package:invoice_reader/model/invoice.dart';
+import 'package:logging/logging.dart';
 
 import 'file_reader.dart';
 
 class InvoiceReaderImpl implements InvoiceReader {
+  
+  final Logger _logger = Logger('InvoiceReader');
+
   @override
   Future<InvoiceSource> read(dynamic source) {
     final completer = Completer<InvoiceSource>();
 
     final reader = FileReader();
     reader.onLoadEnd.listen((event) async {
-      print('onLoadEnd');
+      _logger.fine('onLoadEnd');
       var result = reader.result;
       String? name = (source as File).name;
       if (result is Uint8List) {

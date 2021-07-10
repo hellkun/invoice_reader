@@ -5,9 +5,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/utils/pdf.dart';
+import 'package:logging/logging.dart';
 import 'package:zxing_lib/common.dart';
 import 'package:zxing_lib/qrcode.dart';
 import 'package:zxing_lib/zxing.dart';
+
+final Logger _logger = Logger('Decode');
 
 Future<Result> parseResultFromInvoice(
   InvoiceSource invoice, [
@@ -36,7 +39,7 @@ Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
     return _reader.decode(bitmap);
   } on Exception {
     if (tryCrop) {
-      print('Failed to decode with tryCrop=$tryCrop, retry without cropping');
+      _logger.warning('Failed to decode with tryCrop=$tryCrop, retry without cropping');
 
       final bitmap = _parseFromLuminanceSource(source, false);
       return _reader.decode(bitmap);
@@ -48,7 +51,6 @@ Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
 BinaryBitmap _parseFromLuminanceSource(LuminanceSource source, bool tryCrop) {
   // 二维码在左上角，可以crop一次
   if (source.isCropSupported && tryCrop) {
-    print('crop source');
     source = source.crop(0, 0, source.width ~/ 3, source.height ~/ 3);
   }
 

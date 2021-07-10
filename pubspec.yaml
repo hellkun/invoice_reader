@@ -25,6 +25,7 @@ dependencies:
     sdk: flutter
     
   provider: ^5.0.0
+  logging: ^1.0.1
   zxing_lib: ^0.3.3
   native_pdf_renderer: any
   flutter_dropzone: ^2.0.1

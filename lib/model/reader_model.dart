@@ -6,6 +6,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/utils/decode.dart';
+import 'package:logging/logging.dart';
 import 'package:zxing_lib/zxing.dart';
 
 enum ReaderState {
@@ -17,6 +18,9 @@ enum ReaderState {
 }
 
 class ReaderModel extends ChangeNotifier {
+
+  final Logger _logger = Logger('ReaderModel');
+
   ReaderState _readerState = ReaderState.idle;
 
   ReaderState get readerState => _readerState;
@@ -62,6 +66,7 @@ class ReaderModel extends ChangeNotifier {
       try {
         final qrResult = await Future.delayed(
             intervalDuration, () => parseResultFromInvoice(source));
+        _logger.fine('text = ${qrResult.text}');
 
         list.add(Invoice.fromQR(
           qrResult.text,
@@ -69,9 +74,9 @@ class ReaderModel extends ChangeNotifier {
         ));
         i++;
       } on ChecksumException {
-        print('ChecksumException while decoding file ${source.name}');
+        _logger.info('ChecksumException while decoding file ${source.name}');
       } on NotFoundException {
-        print('NotFoundException while decoding file ${source.name}');
+        _logger.info('NotFoundException while decoding file ${source.name}');
       }
     }
 
@@ -94,6 +99,12 @@ class ReaderModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    assert(() {
+      invoices.forEach((element) {
+        _logger.fine('Got $element');
+      });
+      return true;
+    }());
 
     final excel = Excel.createExcel();
     final sheet = excel.sheets.values.first;
@@ -174,7 +185,7 @@ class ReaderModel extends ChangeNotifier {
       var fExtName = _determineExt(e.source!);
       late List<int> content;
       if (fExtName == null) {
-        print('Unknown original ext name');
+        _logger.warning('Unknown original ext name');
         // TODO: encode
       } else {
         content = e.source!.imageSource;

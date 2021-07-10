@@ -1,11 +1,10 @@
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/utils/reader/file_reader.dart';
-import 'package:native_pdf_renderer/native_pdf_renderer.dart';
+import 'package:logging/logging.dart';
 
 class InvoiceProvideScreen extends StatefulWidget {
   final ValueChanged<InvoiceSource> onAdd;
@@ -20,9 +19,18 @@ class InvoiceProvideScreen extends StatefulWidget {
 }
 
 class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
+  final Logger _logger = Logger('InvoiceProviderScreen');
   final ValueNotifier<bool> _showShadowListenable = ValueNotifier(false);
 
   DropzoneViewController? _controller;
+
+  late InvoiceReader _invoiceReader;
+
+  @override
+  void initState() {
+    _invoiceReader = InvoiceReader();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -30,7 +38,6 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -81,7 +88,6 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
                 },
                 onHover: () => _showShadowListenable.value = true,
                 onLeave: () {
-                  print('onLeave');
                   _showShadowListenable.value = false;
                 },
               ),
@@ -126,18 +132,17 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
   }
 
   void _onContentDropped(dynamic content) {
-    print('File = ${content.name}, '
+    _logger.info('File = ${content.name}, '
         'type = ${content.type}, '
         'size = ${content.size}');
 
     if (!kAcceptFileTypes.hasMatch(content.type)) {
-      print('not an image');
+      _logger.warning('not an image');
       // TODO: 处理不支持的文件
       return;
     }
 
-    InvoiceReader().read(content).then((value) {
-      print('read value = ${value.name}');
+    _invoiceReader.read(content).then((value) {
       widget.onAdd(value);
     });
 
@@ -168,22 +173,6 @@ class _InvoiceProvideScreenState extends State<InvoiceProvideScreen> {
       }); 
       reader.readAsArrayBuffer(content); */
   }
-}
-
-Future<Uint8List> _readPdfAsImage(Uint8List data) async {
-  final document = await PdfDocument.openData(data);
-
-  final page = await document.getPage(1);
-  print('Page size = ${page.width}/${page.height}');
-  final image = await page.render(
-    width: page.width * 3,
-    height: page.height * 3,
-    format: PdfPageFormat.PNG,
-  );
-
-  await page.close();
-
-  return image!.bytes;
 }
 
 final kAcceptFileTypes = RegExp('application/pdf|image/.*');
