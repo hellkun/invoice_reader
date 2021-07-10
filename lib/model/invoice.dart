@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:decimal/decimal.dart';
+import 'package:invoice_reader/utils/decode.dart';
+import 'package:logging/logging.dart';
 
 class InvoiceSource {
   final Uint8List imageSource;
@@ -9,11 +12,30 @@ class InvoiceSource {
 
   final InvoiceSourceType type;
 
+  final Logger _logger = Logger('InvoiceSource');
+
+  /// 解析的结果
+  Invoice? _result;
+
   InvoiceSource(
     this.imageSource, {
     this.name,
     this.type = InvoiceSourceType.image,
   });
+
+  FutureOr<Invoice> getResult() {
+    if (_result != null) {
+      _logger.fine('InvoiceSource $name has been parsed before, reusing the result');
+      return _result!;
+    }
+
+    return parseResultFromInvoice(this)
+        .then((value) => Invoice.fromQR(value.text))
+        .then((value) {
+      _result = value;
+      return value;
+    });
+  }
 }
 
 enum InvoiceSourceType {

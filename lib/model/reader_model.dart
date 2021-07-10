@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -5,7 +6,6 @@ import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:invoice_reader/model/invoice.dart';
-import 'package:invoice_reader/utils/decode.dart';
 import 'package:logging/logging.dart';
 import 'package:zxing_lib/zxing.dart';
 
@@ -18,7 +18,6 @@ enum ReaderState {
 }
 
 class ReaderModel extends ChangeNotifier {
-
   final Logger _logger = Logger('ReaderModel');
 
   ReaderState _readerState = ReaderState.idle;
@@ -27,7 +26,7 @@ class ReaderModel extends ChangeNotifier {
 
   final List<InvoiceSource> _sourcesOfInvoices = [];
 
-  List<InvoiceSource> get sourcesOfInvoices => _sourcesOfInvoices;
+  Iterable<InvoiceSource> get sourcesOfInvoices => _sourcesOfInvoices;
 
   String _message = '已就绪';
   String get message => _message;
@@ -54,7 +53,6 @@ class ReaderModel extends ChangeNotifier {
   }
 
   Future<List<Invoice>> _decodeInvoices({
-    Duration intervalDuration = const Duration(milliseconds: 50),
     ValueChanged<int>? onEach,
   }) async {
     final list = <Invoice>[];
@@ -64,19 +62,15 @@ class ReaderModel extends ChangeNotifier {
       onEach?.call(i);
 
       try {
-        final qrResult = await Future.delayed(
-            intervalDuration, () => parseResultFromInvoice(source));
-        _logger.fine('text = ${qrResult.text}');
-
-        list.add(Invoice.fromQR(
-          qrResult.text,
-          source: source,
-        ));
+        final parsed = await source.getResult();
+        list.add(parsed);
         i++;
       } on ChecksumException {
-        _logger.info('ChecksumException while decoding file ${source.name}');
+        _logger.info(
+            'ChecksumException while decoding file ${source.name}');
       } on NotFoundException {
-        _logger.info('NotFoundException while decoding file ${source.name}');
+        _logger.info(
+            'NotFoundException while decoding file ${source.name}');
       }
     }
 
