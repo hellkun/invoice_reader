@@ -5,9 +5,10 @@ import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
-import 'package:invoice_reader/model/invoice.dart';
 import 'package:logging/logging.dart';
 import 'package:zxing_lib/zxing.dart';
+
+import 'invoice.dart';
 
 enum ReaderState {
   idle,
@@ -66,7 +67,8 @@ class ReaderModel extends ChangeNotifier {
       onEach?.call(i);
 
       try {
-        final parsed = await source.getResult();
+        final parsed = await Future.delayed(
+            const Duration(milliseconds: 50), () => source.getResult());
         list.add(parsed);
         i++;
       } on ChecksumException {
