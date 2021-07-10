@@ -66,11 +66,9 @@ class ReaderModel extends ChangeNotifier {
         list.add(parsed);
         i++;
       } on ChecksumException {
-        _logger.info(
-            'ChecksumException while decoding file ${source.name}');
+        _logger.info('ChecksumException while decoding file ${source.name}');
       } on NotFoundException {
-        _logger.info(
-            'NotFoundException while decoding file ${source.name}');
+        _logger.info('NotFoundException while decoding file ${source.name}');
       }
     }
 
@@ -134,7 +132,7 @@ class ReaderModel extends ChangeNotifier {
     // 等待一下，便于UI更新
     await Future.delayed(const Duration(seconds: 1));
 
-    final arc = _generateArchive(invoices);
+    final arc = await _generateArchive(_sourcesOfInvoices);
     final excelContent = excel.encode()!;
     arc.addFile(ArchiveFile(
       'invoices.xlsx',
@@ -161,7 +159,7 @@ class ReaderModel extends ChangeNotifier {
     );
   }
 
-  Archive _generateArchive(List<Invoice> invoices) {
+  Future<Archive> _generateArchive(List<InvoiceSource> invoices) async {
     final arc = Archive();
 
     String? _determineExt(InvoiceSource source) {
@@ -171,33 +169,28 @@ class ReaderModel extends ChangeNotifier {
       return source.name!.substring(source.name!.lastIndexOf('.'));
     }
 
-    invoices.map((e) {
-      if (e.source == null) {
-        return null;
-      }
-
-      var fExtName = _determineExt(e.source!);
+    final futures = invoices.map((e) async {
+      var fExtName = _determineExt(e);
       late List<int> content;
       if (fExtName == null) {
         _logger.warning('Unknown original ext name');
         // TODO: encode
       } else {
-        content = e.source!.imageSource;
+        content = e.imageSource;
       }
 
       assert(fExtName != null);
-      final fName = '${e.code}-${e.serial}';
+      final info = await e.getResult();
+      final fName = '${info.code}-${info.serial}';
 
       return ArchiveFile(
         fName + fExtName!,
         content.length,
         content,
       );
-    }).forEach((element) {
-      if (element != null) {
-        arc.addFile(element);
-      }
     });
+
+    (await Future.wait(futures)).forEach(arc.addFile);
 
     return arc;
   }
