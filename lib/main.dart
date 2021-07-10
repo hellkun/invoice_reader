@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:invoice_reader/pages/reader_screen.dart';
+import 'package:logging/logging.dart';
 
 void main() {
+  Logger.root.level = Level.ALL; // defaults to Level.INFO
+  Logger.root.onRecord.listen((record) {
+    print('${record.level.name} [${record.loggerName}]: ${record.message}');
+  });
+
   runApp(MyApp());
 }
 
