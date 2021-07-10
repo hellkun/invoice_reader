@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
@@ -96,13 +97,10 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
   Widget _buildMain(bool showActionBar) {
     Widget child = widget.sourcesOfInvoices.isEmpty
         ? _buildGuide()
-        : LayoutBuilder(
-            builder: (_, constraints) => _InvoicesPreview(
-              width: constraints.maxWidth,
-              sourcesOfInvoices: widget.sourcesOfInvoices,
-              onRemove: widget.onRemove,
-              onRemoveAll: widget.onRemoveAll,
-            ),
+        : _InvoicesPreview(
+            sourcesOfInvoices: widget.sourcesOfInvoices,
+            onRemove: widget.onRemove,
+            onRemoveAll: widget.onRemoveAll,
           );
 
     if (showActionBar) {
@@ -195,7 +193,26 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
   }
 
   /// 选择文件
-  void _pickFile() {
+  void _pickFile() async {
+    final pickResult = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowMultiple: true,
+      allowedExtensions: const [
+        'jpg',
+        'png',
+        'pdf',
+      ],
+    );
+    if (pickResult == null) {
+      // nothing picked
+      return;
+    }
+
+    pickResult.files.map(_readPlatformFile).forEach((element) async {
+      widget.onAdd?.call(await element);
+    });
+    return;
+
     if (_controller == null) {
       // TODO: 非Web，需要使用别的插件处理
       return;
@@ -204,6 +221,19 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
     _controller!.pickFiles(multiple: true).then((value) {
       value.forEach(_onContentDropped);
     });
+  }
+
+  Future<InvoiceSource> _readPlatformFile(PlatformFile file) {
+    if (file.bytes != null) {
+      return SynchronousFuture(InvoiceSource(file.bytes!,
+          name: file.name,
+          type: file.extension == 'pdf'
+              ? InvoiceSourceType.pdf
+              : InvoiceSourceType.image));
+    } else {
+      assert(file.path != null); // cannot be on web
+      return Future.error(UnimplementedError('_read file from platform'));
+    }
   }
 
   void _onContentDropped(dynamic content) {
@@ -236,72 +266,33 @@ class _InvoicesPreview extends StatelessWidget {
   _InvoicesPreview({
     Key? key,
     required this.sourcesOfInvoices,
-    required this.width,
     this.onRemove,
     this.onRemoveAll,
   })  : assert(sourcesOfInvoices.isNotEmpty),
         super(key: key);
 
-  final double width;
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        _buildActionBar(theme),
-        Expanded(
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: width ~/ _kMinCardWidth,
-              mainAxisSpacing: 8.0,
-              crossAxisSpacing: 8.0,
-              childAspectRatio: 4 / 3,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 8.0,
-            ),
-            itemCount: sourcesOfInvoices.length,
-            itemBuilder: (context, index) {
-              final item = sourcesOfInvoices.elementAt(index);
-              return InvoiceCard(
-                source: item,
-                onRemove: onRemove != null ? () => onRemove!(item) : null,
-              );
-            },
-          ),
+    return LayoutBuilder(
+      builder: (_, constraints) => GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: constraints.maxHeight ~/ _kMinCardWidth,
+          mainAxisSpacing: 8.0,
+          crossAxisSpacing: 8.0,
+          childAspectRatio: 4 / 3,
         ),
-      ],
-    );
-  }
-
-  Widget _buildActionBar(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 8.0,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text('已添加${sourcesOfInvoices.length}个文件'),
-
-          // 清空
-          if (onRemoveAll != null) ...[
-            const SizedBox(width: 8.0),
-            GestureDetector(
-              child: Text(
-                '清空',
-                style: theme.textTheme.bodyText1?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              onTap: onRemoveAll,
-            ),
-          ]
-        ],
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24.0,
+          vertical: 8.0,
+        ),
+        itemCount: sourcesOfInvoices.length,
+        itemBuilder: (context, index) {
+          final item = sourcesOfInvoices.elementAt(index);
+          return InvoiceCard(
+            source: item,
+            onRemove: onRemove != null ? () => onRemove!(item) : null,
+          );
+        },
       ),
     );
   }
