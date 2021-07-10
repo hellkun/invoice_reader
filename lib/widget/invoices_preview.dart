@@ -232,7 +232,7 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
               : InvoiceSourceType.image));
     } else {
       assert(file.path != null); // cannot be on web
-      return Future.error(UnimplementedError('_read file from platform'));
+      return _invoiceReader.read(file.path);
     }
   }
 
