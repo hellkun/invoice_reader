@@ -31,22 +31,34 @@ class InvoiceSource {
 
   bool get hasParsed => _result != null;
 
+  Object? _exception;
+
   Invoice? peekResult() => _result;
 
-  Future<Invoice> getResult() {
+  Future<Invoice> getResult() async {
     if (_result != null) {
       _logger.fine(
           'InvoiceSource $name has been parsed before, reusing the result');
       return SynchronousFuture(_result!);
     }
 
+    if (_exception != null) {
+      return Future.error(_exception!);
+    }
+
     _logger.fine('Decoding InvoiceSource $name ...');
-    return parseResultFromInvoice(this)
-        .then((value) => Invoice.fromQR(value.text))
-        .then((value) {
-      _result = value;
-      return value;
-    });
+    try {
+      final img = await getImage();
+      final qrData = await parseResultFromInvoice(img);
+      final result = Invoice.fromQR(qrData.text);
+
+      _result = result;
+      return result;
+    } catch (e) {
+      _logger.info('Failed to decode $name');
+      _exception = e;
+      rethrow;
+    }
   }
 
   Future<Uint8List> getImage() async {

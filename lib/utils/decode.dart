@@ -12,11 +12,11 @@ import 'package:zxing_lib/zxing.dart';
 final Logger _logger = Logger('Decode');
 
 Future<Result> parseResultFromInvoice(
-  InvoiceSource invoice, [
+  Uint8List image, [
   bool tryCrop = true,
 ]) async {
   return compute(_parseResultFromInvoice, {
-    'invoice': invoice,
+    'image': image,
     'tryCrop': tryCrop,
   });
 }
@@ -24,12 +24,10 @@ Future<Result> parseResultFromInvoice(
 final _reader = QRCodeReader();
 
 Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
-  final invoice = parameter['invoice'] as InvoiceSource;
+  final image = parameter['image'] as Uint8List;
   final tryCrop = parameter['tryCrop'] as bool;
 
-  final imgSrc = await invoice.getImage();
-
-  final source = await _createFromBytes(imgSrc);
+  final source = await _createFromBytes(image);
 
   try {
     final bitmap = _parseFromLuminanceSource(source, tryCrop);
