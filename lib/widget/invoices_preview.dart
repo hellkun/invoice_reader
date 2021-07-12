@@ -2,7 +2,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/utils/reader/file_reader.dart';
 import 'package:logging/logging.dart';
@@ -283,36 +282,30 @@ class _InvoicesPreview extends StatelessWidget {
       _logger.fine(
           'Constraint width = ${constraints.maxWidth}, column count = $columnCount');
 
-      return AnimationLimiter(
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columnCount,
-            mainAxisSpacing: 8.0,
-            crossAxisSpacing: 8.0,
-            childAspectRatio: 4 / 3,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24.0,
-            vertical: 8.0,
-          ),
-          itemCount: sourcesOfInvoices.length,
-          itemBuilder: (context, index) {
-            final item = sourcesOfInvoices.elementAt(index);
-            return AnimationConfiguration.staggeredGrid(
-              duration: const Duration(milliseconds: 400),
-              columnCount: columnCount,
-              position: index,
-              child: SlideAnimation(
-                verticalOffset: 40.0,
-                curve: Curves.easeInOut,
-                child: InvoiceCard(
-                  source: item,
-                  onRemove: onRemove != null ? () => onRemove!(item) : null,
-                ),
-              ),
-            );
-          },
+      final tween = Tween<Offset>(
+        begin: const Offset(0, 0.1),
+        end: Offset.zero,
+      );
+
+      return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columnCount,
+          mainAxisSpacing: 8.0,
+          crossAxisSpacing: 8.0,
+          childAspectRatio: 4 / 3,
         ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24.0,
+          vertical: 8.0,
+        ),
+        itemCount: sourcesOfInvoices.length,
+        itemBuilder: (context, index) {
+          final item = sourcesOfInvoices.elementAt(index);
+          return InvoiceCard(
+              source: item,
+              onRemove: onRemove != null ? () => onRemove!(item) : null,
+            );
+        },
       );
     });
   }
