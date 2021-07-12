@@ -213,16 +213,6 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
     pickResult.files.map(_readPlatformFile).forEach((element) async {
       widget.onAdd?.call(await element);
     });
-    return;
-
-    if (_controller == null) {
-      // TODO: 非Web，需要使用别的插件处理
-      return;
-    }
-
-    _controller!.pickFiles(multiple: true).then((value) {
-      value.forEach(_onContentDropped);
-    });
   }
 
   Future<InvoiceSource> _readPlatformFile(PlatformFile file) {
@@ -245,7 +235,7 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
         'size = ${content.size}');
 
     if (!kAcceptFileTypes.hasMatch(content.type)) {
-      _logger.warning('not an image');
+      _logger.warning('unsupported file type: ${content.type}');
       // TODO: 处理不支持的文件
       return;
     }
@@ -283,11 +273,6 @@ class _InvoicesPreview extends StatelessWidget {
       final columnCount = constraints.maxWidth ~/ _kMinCardWidth;
       _logger.fine(
           'Constraint width = ${constraints.maxWidth}, column count = $columnCount');
-
-      final tween = Tween<Offset>(
-        begin: const Offset(0, 0.1),
-        end: Offset.zero,
-      );
 
       return GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
