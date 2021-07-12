@@ -53,7 +53,9 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = _buildMain(true);
+    final showActionBar = widget.sourcesOfInvoices.isNotEmpty;
+
+    Widget child = _buildMain(showActionBar);
 
     if (kIsWeb) {
       child = Stack(
@@ -65,7 +67,7 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
             onHover: () => updateDraggingState(true),
             onLeave: () => updateDraggingState(false),
           ),
-          child,
+          Positioned.fill(child: child),
           if (_isDragging)
             Positioned.fill(
               child: Container(
@@ -302,9 +304,9 @@ class _InvoicesPreview extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = sourcesOfInvoices.elementAt(index);
           return InvoiceCard(
-              source: item,
-              onRemove: onRemove != null ? () => onRemove!(item) : null,
-            );
+            source: item,
+            onRemove: onRemove != null ? () => onRemove!(item) : null,
+          );
         },
       );
     });
