@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:zxing_lib/zxing.dart';
 
@@ -104,17 +105,19 @@ class ReaderModel extends ChangeNotifier {
       return true;
     }());
 
-    final excel = Excel.createExcel();
+    final excel = await _getBaseExcelTemplate();
+
     final sheet = excel.sheets.values.first;
 
-    sheet.insertRowIterables([
+    // 模板中已经包含表头
+    /* sheet.insertRowIterables([
       '序号',
       '发票代码（文本格式）',
       '发票号码',
       '校验码（后6位）',
       '开票日期',
       '金额',
-    ], 0);
+    ], 0); */
 
     _message = '正在生成Excel表格';
     notifyListeners();
@@ -122,6 +125,7 @@ class ReaderModel extends ChangeNotifier {
     for (var i = 0; i < invoices.length; i++) {
       final e = invoices[i];
 
+      // 从3rd row开始插入数据
       sheet.insertRowIterables([
         i + 1,
         "${e.code}",
@@ -129,7 +133,7 @@ class ReaderModel extends ChangeNotifier {
         "${e.signature.substring(e.signature.length - 6, e.signature.length)}",
         e.strDate,
         e.amount,
-      ], i + 1);
+      ], i + 2);
     }
 
     _message = '正在生成压缩包';
@@ -199,5 +203,12 @@ class ReaderModel extends ChangeNotifier {
     (await Future.wait(futures)).forEach(arc.addFile);
 
     return arc;
+  }
+
+  FutureOr<Excel> _getBaseExcelTemplate() async {
+    final data = await rootBundle.load('xls_template.xlsx');
+    final bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    return Excel.decodeBytes(bytes);
   }
 }
