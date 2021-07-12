@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/utils/reader/file_reader.dart';
 import 'package:logging/logging.dart';
@@ -257,6 +258,8 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
 class _InvoicesPreview extends StatelessWidget {
   static const _kMinCardWidth = 360.0;
 
+  final _logger = Logger('InvoicesPreview');
+
   final Iterable<InvoiceSource> sourcesOfInvoices;
 
   final ValueChanged<InvoiceSource>? onRemove;
@@ -273,28 +276,45 @@ class _InvoicesPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (_, constraints) => GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: constraints.maxHeight ~/ _kMinCardWidth,
-          mainAxisSpacing: 8.0,
-          crossAxisSpacing: 8.0,
-          childAspectRatio: 4 / 3,
+    return LayoutBuilder(builder: (_, constraints) {
+      assert(constraints.hasBoundedWidth);
+
+      final columnCount = constraints.maxWidth ~/ _kMinCardWidth;
+      _logger.fine(
+          'Constraint width = ${constraints.maxWidth}, column count = $columnCount');
+
+      return AnimationLimiter(
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columnCount,
+            mainAxisSpacing: 8.0,
+            crossAxisSpacing: 8.0,
+            childAspectRatio: 4 / 3,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24.0,
+            vertical: 8.0,
+          ),
+          itemCount: sourcesOfInvoices.length,
+          itemBuilder: (context, index) {
+            final item = sourcesOfInvoices.elementAt(index);
+            return AnimationConfiguration.staggeredGrid(
+              duration: const Duration(milliseconds: 400),
+              columnCount: columnCount,
+              position: index,
+              child: SlideAnimation(
+                verticalOffset: 40.0,
+                curve: Curves.easeInOut,
+                child: InvoiceCard(
+                  source: item,
+                  onRemove: onRemove != null ? () => onRemove!(item) : null,
+                ),
+              ),
+            );
+          },
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24.0,
-          vertical: 8.0,
-        ),
-        itemCount: sourcesOfInvoices.length,
-        itemBuilder: (context, index) {
-          final item = sourcesOfInvoices.elementAt(index);
-          return InvoiceCard(
-            source: item,
-            onRemove: onRemove != null ? () => onRemove!(item) : null,
-          );
-        },
-      ),
-    );
+      );
+    });
   }
 }
 

@@ -36,7 +36,8 @@ dependencies:
   archive: ^3.1.2
   package_info_plus: ^1.0.3
   flutter_markdown: ^0.6.2
-
+  flutter_staggered_animations: ^1.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
