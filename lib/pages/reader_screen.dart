@@ -22,43 +22,45 @@ class ReaderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _model,
-      child: LayoutBuilder(builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 500;
+      child: Consumer<ReaderModel>(
+        builder: (_, model, ___) => LayoutBuilder(builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 500;
 
-        final main = InvoiceInteractionZone(
-          sourcesOfInvoices: _model.sourcesOfInvoices,
-          onAdd: _model.addInvoiceSource,
-          onRemove: _model.removeInvoiceSource,
-          onRemoveAll: _model.removeAllSources,
-        );
+          final main = InvoiceInteractionZone(
+            sourcesOfInvoices: model.sourcesOfInvoices,
+            onAdd: model.addInvoiceSource,
+            onRemove: model.removeInvoiceSource,
+            onRemoveAll: model.removeAllSources,
+          );
 
-        final actionArea = _buildActionArea(Theme.of(context), isWide);
+          final actionArea = _buildActionArea(Theme.of(context), isWide);
 
-        // 根据屏幕宽度选择横向、纵向排列
-        final body = isWide
-            ? Row(children: [
-                Flexible(child: main, flex: 3),
-                Flexible(child: actionArea, flex: 1),
-              ])
-            : Column(children: [
-                Expanded(child: main),
-                actionArea,
-              ]);
+          // 根据屏幕宽度选择横向、纵向排列
+          final body = isWide
+              ? Row(children: [
+                  Flexible(child: main, flex: 3),
+                  Flexible(child: actionArea, flex: 1),
+                ])
+              : Column(children: [
+                  Expanded(child: main),
+                  actionArea,
+                ]);
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(title),
-            actions: [
-              IconButton(
-                onPressed: () => _showChangelog(context),
-                tooltip: '查看更新日志',
-                icon: const Icon(Icons.table_rows),
-              )
-            ],
-          ),
-          body: body,
-        );
-      }),
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(title),
+              actions: [
+                IconButton(
+                  onPressed: () => _showChangelog(context),
+                  tooltip: '查看更新日志',
+                  icon: const Icon(Icons.table_rows),
+                )
+              ],
+            ),
+            body: body,
+          );
+        }),
+      ),
     );
   }
 
