@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -15,6 +16,8 @@ import 'package:zxing_lib/zxing.dart';
 Logger _logger = Logger('ProcessingScreen');
 
 class ProcessingScreen extends StatelessWidget {
+  static const _kMinDialogWidth = 300.0;
+
   final Iterable<InvoiceSource> invoices;
 
   ProcessingScreen({
@@ -27,10 +30,13 @@ class ProcessingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final width = MediaQuery.of(context).size.width;
+
     return ChangeNotifierProvider<_ProcessingModel>(
       create: (_) => _ProcessingModel(invoices),
       child: Container(
         padding: const EdgeInsets.all(24.0),
+        width: max(_kMinDialogWidth, width / 3),
         child: Consumer<_ProcessingModel>(
           builder: (context, model, child) {
             return Column(
@@ -47,11 +53,13 @@ class ProcessingScreen extends StatelessWidget {
                 const SizedBox(height: 16.0),
                 // 进度（文字+进度条）
 
-                //
-                ...[
-                  for (var entry in model.stateInfo)
-                    _buildStageEntry(theme, entry),
-                ],
+                ListView.separated(
+                  itemBuilder: (_, index) =>
+                      _buildStageEntry(theme, model.stateInfo.elementAt(index)),
+                  separatorBuilder: (_, __) => const SizedBox(height: 4.0),
+                  itemCount: model.stateInfo.length,
+                  shrinkWrap: true,
+                ),
 
                 if (model.zippedFileBytes != null)
                   Padding(
@@ -86,7 +94,7 @@ class ProcessingScreen extends StatelessWidget {
 
   void _download(List<int> bytes) {
     Future.delayed(
-      const Duration(milliseconds: 350),
+      const Duration(milliseconds: 300),
       () => FileSaver.instance.saveFile(
         '电子发票.zip',
         Uint8List.fromList(bytes),
@@ -177,7 +185,9 @@ class _ProcessingModel extends ChangeNotifier {
     _stageMap[_ProcessingStage.creatingArchive] =
         _StateInfo('生成压缩包', '正在处理', false);
     notifyListeners();
-    final arc = await _generateArchive(sources, excel);
+
+    final arc = await Future.delayed(const Duration(milliseconds: 50),
+        () => _generateArchive(sources, excel));
     final encoder = ZipEncoder();
     _zippedFileBytes = encoder.encode(arc)!;
     encoder.endEncode();
