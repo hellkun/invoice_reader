@@ -6,6 +6,7 @@ import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:invoice_reader/utils/constants.dart';
 import 'package:logging/logging.dart';
 import 'package:zxing_lib/zxing.dart';
 
@@ -206,7 +207,7 @@ class ReaderModel extends ChangeNotifier {
   }
 
   FutureOr<Excel> _getBaseExcelTemplate() async {
-    final data = await rootBundle.load('xls_template.xlsx');
+    final data = await rootBundle.load(FileConstants.xlsTemplatePath);
     final bytes =
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
     return Excel.decodeBytes(bytes);
