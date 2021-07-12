@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/model/reader_model.dart';
 import 'package:invoice_reader/pages/changes_screen.dart';
+import 'package:invoice_reader/pages/processing_screen.dart';
 import 'package:invoice_reader/widget/invoices_preview.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +24,8 @@ class ReaderScreen extends StatelessWidget {
     return ChangeNotifierProvider.value(
       value: _model,
       child: Consumer<ReaderModel>(
-        builder: (_, model, ___) => LayoutBuilder(builder: (context, constraints) {
+        builder: (_, model, ___) =>
+            LayoutBuilder(builder: (context, constraints) {
           final isWide = constraints.maxWidth > 500;
 
           final main = InvoiceInteractionZone(
@@ -119,9 +121,17 @@ class ReaderScreen extends StatelessWidget {
   Widget _buildMainActionButton() {
     return Builder(
       builder: (context) => ElevatedButton(
-        onPressed: _model.readerState == ReaderState.decoding
+        onPressed: _model.readerState == ReaderState.decoding ||
+                _model.sourcesOfInvoices.isEmpty
             ? null
-            : _model.decodeAndSave,
+            : () {
+                showDialog(
+                  context: context,
+                  builder: (_) => Dialog(
+                    child: ProcessingScreen(invoices: _model.sourcesOfInvoices),
+                  ),
+                );
+              },
         style: ButtonStyle(
           padding: MaterialStateProperty.all(
             const EdgeInsets.symmetric(vertical: 16.0),
@@ -130,7 +140,7 @@ class ReaderScreen extends StatelessWidget {
         child: Container(
           width: double.infinity,
           child: Text(
-            _model.readerState == ReaderState.decoding ? '请稍候' : '解析并下载',
+            _model.readerState == ReaderState.decoding ? '请稍候' : '开始处理',
             textAlign: TextAlign.center,
           ),
         ),
