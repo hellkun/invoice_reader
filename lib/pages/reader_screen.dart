@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/model/reader_model.dart';
+import 'package:invoice_reader/pages/changes_screen.dart';
 import 'package:invoice_reader/widget/invoices_preview.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -19,45 +20,45 @@ class ReaderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ChangeNotifierProvider.value(
-        value: _model,
-        child: Consumer<ReaderModel>(
-          builder: (context, value, child) {
-            return LayoutBuilder(builder: (context, constraints) {
-              /* if (_model.sourcesOfInvoices.isEmpty) {
-                  return InvoiceProvideScreen(
-                    onAdd: _model.addInvoiceSource,
-                  );
-                } */
-              final isWide = constraints.maxWidth > 500;
+    return ChangeNotifierProvider.value(
+      value: _model,
+      child: LayoutBuilder(builder: (context, constraints) {
+        final isWide = constraints.maxWidth > 500;
 
-              final main = InvoiceInteractionZone(
-                sourcesOfInvoices: _model.sourcesOfInvoices,
-                onAdd: _model.addInvoiceSource,
-                onRemove: _model.removeInvoiceSource,
-                onRemoveAll: _model.removeAllSources,
-              );
+        final main = InvoiceInteractionZone(
+          sourcesOfInvoices: _model.sourcesOfInvoices,
+          onAdd: _model.addInvoiceSource,
+          onRemove: _model.removeInvoiceSource,
+          onRemoveAll: _model.removeAllSources,
+        );
 
-              final actionArea = _buildActionArea(Theme.of(context), isWide);
+        final actionArea = _buildActionArea(Theme.of(context), isWide);
 
-              return isWide
-                  ? Row(
-                      children: [
-                        Flexible(child: main, flex: 3),
-                        Flexible(child: actionArea, flex: 1),
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        Expanded(child: main),
-                        actionArea,
-                      ],
-                    );
-            });
-          },
-        ),
-      ),
+        // 根据屏幕宽度选择横向、纵向排列
+        final body = isWide
+            ? Row(children: [
+                Flexible(child: main, flex: 3),
+                Flexible(child: actionArea, flex: 1),
+              ])
+            : Column(children: [
+                Expanded(child: main),
+                actionArea,
+              ]);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            actions: [
+              IconButton(
+                onPressed: () => _showChangelog(context),
+                tooltip: '查看更新日志',
+                icon: const Icon(Icons.table_rows),
+              )
+            ],
+          ),
+          body: body,
+        );
+      }),
     );
   }
 
@@ -131,6 +132,15 @@ class ReaderScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ),
+      ),
+    );
+  }
+
+  void _showChangelog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        child: ChangesScreen(),
       ),
     );
   }
