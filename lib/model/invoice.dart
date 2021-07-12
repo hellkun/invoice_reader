@@ -6,28 +6,31 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:invoice_reader/utils/decode.dart';
+import 'package:invoice_reader/utils/pdf.dart';
 import 'package:logging/logging.dart';
 
+final Logger _logger = Logger('InvoiceSource');
+
 class InvoiceSource {
-  final Uint8List imageSource;
+  final Uint8List content;
 
   final String? name;
 
   final InvoiceSourceType type;
 
-  final Logger _logger = Logger('InvoiceSource');
-
   /// 解析的结果
   Invoice? _result;
 
+  Uint8List? _decodedContent;
+
   InvoiceSource(
-    this.imageSource, {
+    this.content, {
     this.name,
     this.type = InvoiceSourceType.image,
   });
 
   bool get hasParsed => _result != null;
-  
+
   Invoice? peekResult() => _result;
 
   Future<Invoice> getResult() {
@@ -46,9 +49,25 @@ class InvoiceSource {
     });
   }
 
+  Future<Uint8List> getImage() async {
+    if (type == InvoiceSourceType.image) {
+      return SynchronousFuture(content);
+    }
+
+    // reuse non-image decoding result
+    if (_decodedContent != null) {
+      return SynchronousFuture(_decodedContent!);
+    }
+
+    // decode non-image content
+    final img = await readPdfAsImage(content);
+    _decodedContent = img;
+    return img;
+  }
+
   @override
   int get hashCode {
-    final bytesHash = hashList(imageSource);
+    final bytesHash = hashList(content);
     return hashValues(
       name,
       bytesHash,
@@ -61,7 +80,7 @@ class InvoiceSource {
     if (other is! InvoiceSource) return false;
 
     return other.name == name &&
-        listEquals(other.imageSource, imageSource) &&
+        listEquals(other.content, content) &&
         other.type == type;
   }
 }

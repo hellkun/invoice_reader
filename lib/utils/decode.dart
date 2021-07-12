@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:invoice_reader/model/invoice.dart';
-import 'package:invoice_reader/utils/pdf.dart';
 import 'package:logging/logging.dart';
 import 'package:zxing_lib/common.dart';
 import 'package:zxing_lib/qrcode.dart';
@@ -28,9 +27,7 @@ Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
   final invoice = parameter['invoice'] as InvoiceSource;
   final tryCrop = parameter['tryCrop'] as bool;
 
-  final imgSrc = invoice.type == InvoiceSourceType.image
-      ? invoice.imageSource
-      : await readPdfAsImage(invoice.imageSource);
+  final imgSrc = await invoice.getImage();
 
   final source = await _createFromBytes(imgSrc);
 
@@ -39,7 +36,8 @@ Future<Result> _parseResultFromInvoice(Map<String, dynamic> parameter) async {
     return _reader.decode(bitmap);
   } on Exception {
     if (tryCrop) {
-      _logger.warning('Failed to decode with tryCrop=$tryCrop, retry without cropping');
+      _logger.warning(
+          'Failed to decode with tryCrop=$tryCrop, retry without cropping');
 
       final bitmap = _parseFromLuminanceSource(source, false);
       return _reader.decode(bitmap);

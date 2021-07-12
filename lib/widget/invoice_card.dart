@@ -1,9 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:invoice_reader/utils/pdf.dart';
+import 'package:flutter/material.dart';
 
 import '../model/invoice.dart';
-import 'package:flutter/material.dart';
 
 class InvoiceCard extends StatefulWidget {
   final InvoiceSource source;
@@ -21,13 +20,11 @@ class InvoiceCard extends StatefulWidget {
 }
 
 class _InvoiceCardState extends State<InvoiceCard> {
-  Future<Uint8List>? _future;
+  late Future<Uint8List> _future;
 
   @override
   void initState() {
-    _future = widget.source.type == InvoiceSourceType.pdf
-        ? readPdfAsImage(widget.source.imageSource)
-        : null;
+    _future = widget.source.getImage();
     super.initState();
   }
 
@@ -73,10 +70,9 @@ class _InvoiceCardState extends State<InvoiceCard> {
         );
 
     if (widget.source.type == InvoiceSourceType.image)
-      return _buildMemoryImage(widget.source.imageSource);
+      return _buildMemoryImage(widget.source.content);
 
     // PDF
-    assert(_future != null);
     return FutureBuilder<Uint8List>(
       future: _future,
       builder: (context, snapshot) {

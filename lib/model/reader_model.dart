@@ -187,7 +187,7 @@ class ReaderModel extends ChangeNotifier {
         _logger.warning('Unknown original ext name');
         // TODO: encode
       } else {
-        content = e.imageSource;
+        content = e.content;
       }
 
       assert(fExtName != null);
