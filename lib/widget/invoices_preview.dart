@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -125,6 +127,7 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
     final theme = Theme.of(context);
 
     return Container(
+      width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -270,7 +273,7 @@ class _InvoicesPreview extends StatelessWidget {
     return LayoutBuilder(builder: (_, constraints) {
       assert(constraints.hasBoundedWidth);
 
-      final columnCount = constraints.maxWidth ~/ _kMinCardWidth;
+      final columnCount = max(constraints.maxWidth ~/ _kMinCardWidth, 1);
       _logger.fine(
           'Constraint width = ${constraints.maxWidth}, column count = $columnCount');
 
