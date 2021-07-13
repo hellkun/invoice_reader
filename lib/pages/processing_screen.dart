@@ -7,6 +7,7 @@ import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:invoice_reader/model/invoice.dart';
 import 'package:invoice_reader/utils/constants.dart';
 import 'package:logging/logging.dart';
@@ -93,10 +94,13 @@ class ProcessingScreen extends StatelessWidget {
   }
 
   void _download(List<int> bytes) {
+    final date = DateTime.now();
+    final strDate = DateFormat('yyyy-MM-dd_HH-mm').format(date);
+
     Future.delayed(
       const Duration(milliseconds: 300),
       () => FileSaver.instance.saveFile(
-        '电子发票.zip',
+        '电子发票_$strDate.zip',
         Uint8List.fromList(bytes),
         'zip',
         mimeType: MimeType.ZIP,

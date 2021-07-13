@@ -36,7 +36,8 @@ dependencies:
   archive: ^3.1.2
   package_info_plus: ^1.0.3
   flutter_markdown: ^0.6.2
-
+  intl: ^0.17.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -56,6 +57,8 @@ flutter:
   # assets:
   #   - assets/
   #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/
   
   fonts:
     - family: NotoSans
