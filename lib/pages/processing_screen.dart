@@ -253,17 +253,26 @@ class _ProcessingModel extends ChangeNotifier {
       }
 
       assert(fExtName != null);
-      final info = await e.getResult();
-      final fName = '${info.code}-${info.serial}';
 
-      return ArchiveFile(
-        fName + fExtName!,
-        content.length,
-        content,
-      );
+      try {
+        final info = await e.getResult();
+        final fName = '${info.code}-${info.serial}';
+
+        return ArchiveFile(
+          fName + fExtName!,
+          content.length,
+          content,
+        );
+      } catch (e) {
+        return null;
+      }
     });
 
-    (await Future.wait(futures)).forEach(arc.addFile);
+    (await Future.wait(futures)).forEach((file) {
+      if (file != null) {
+        arc.addFile(file);
+      }
+    });
 
     final excelContent = file.encode()!;
     arc.addFile(ArchiveFile(
