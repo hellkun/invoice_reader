@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:excel/excel.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -157,6 +158,9 @@ class _StateInfo {
 }
 
 class _ProcessingModel extends ChangeNotifier {
+  static const Duration _kDefaultDuration =
+      kIsWeb ? const Duration(milliseconds: 50) : Duration.zero;
+
   List<int>? _zippedFileBytes;
 
   List<int>? get zippedFileBytes => _zippedFileBytes;
@@ -214,7 +218,7 @@ class _ProcessingModel extends ChangeNotifier {
         final parsed = source.hasParsed
             ? source.peekResult()!
             : (await Future.delayed(
-                const Duration(milliseconds: 50), () => source.getResult()));
+                _kDefaultDuration, () => source.getResult()));
         list.add(parsed);
         i++;
       } on ChecksumException {
