@@ -14,7 +14,8 @@ try {
     icChromeExt = false;
 }
 
-var jsBaseUrl = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/';
+//var jsBaseUrl = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/';
+var jsBaseUrl = '';
 var script = document.createElement('script');
 script.src = jsBaseUrl + 'pdf.min.js'
 script.onload = () => {
@@ -23,7 +24,7 @@ script.onload = () => {
 };
 document.body.appendChild(script);
 
-
 if (isChromeExt) {
     document.documentElement.setAttribute('style', 'width: 360px; height: 540px');
+    window.flutterWebRenderer = "html";
 }
