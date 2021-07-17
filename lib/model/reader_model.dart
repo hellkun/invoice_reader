@@ -1,14 +1,6 @@
-import 'dart:async';
-import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
-import 'package:excel/excel.dart';
-import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:invoice_reader/utils/constants.dart';
 import 'package:logging/logging.dart';
-import 'package:zxing_lib/zxing.dart';
 
 import 'invoice.dart';
 
