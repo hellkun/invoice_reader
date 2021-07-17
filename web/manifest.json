@@ -6,8 +6,15 @@
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     "browser_action": {
 		"default_title": "电子发票归档",
-		"default_popup": "index.html",
-		"default_icon": "icons/Icon-192.png"
+		  "default_popup": "index.html",
+		  "default_icon": {
+        "16": "favicon.png",
+        "128": "icons/Icon-192.png"
+      }
+    },
+    "icons": {
+      "16": "favicon.png",
+      "128": "icons/Icon-192.png"
     },
     "manifest_version": 2
 }
