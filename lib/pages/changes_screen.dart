@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:invoice_reader/utils/constants.dart';
 
@@ -20,7 +19,8 @@ class ChangesScreen extends StatelessWidget {
           const Divider(),
           Expanded(
             child: FutureBuilder<String>(
-              future: rootBundle.loadString(FileConstants.assetChangesPath),
+              future: DefaultAssetBundle.of(context)
+                  .loadString(FileConstants.assetChangesPath),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return SingleChildScrollView(
