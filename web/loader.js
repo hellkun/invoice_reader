@@ -11,11 +11,11 @@ try {
     //console.log('chrome ext id: ' + chrome.runtime.id);
 } catch (error) {
     console.info('Not a chrome env:' + error);
-    icChromeExt = false;
+    isChromeExt = false;
 }
 
 //var jsBaseUrl = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/';
-var jsBaseUrl = '';
+var jsBaseUrl = 'js/';
 var script = document.createElement('script');
 script.src = jsBaseUrl + 'pdf.min.js'
 script.onload = () => {
@@ -26,5 +26,16 @@ document.body.appendChild(script);
 
 if (isChromeExt) {
     document.documentElement.setAttribute('style', 'width: 360px; height: 540px');
-    window.flutterWebRenderer = "html";
+}
+
+var forceHtml = getQueryString('html');
+if (forceHtml || isChromeExt) {
+	console.log('Use html as renderer: forceHtml=' + forceHtml +' ,crx=' + isChromeExt);
+	window.flutterWebRenderer = "html";
+}
+
+function getQueryString(name) {
+	var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+	var r = window.location.search.substr(1).match(reg);
+	if (r != null) return unescape(r[2]); return null;
 }
