@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:invoice_reader/model/invoice.dart';
 import 'package:logging/logging.dart';
 import 'package:zxing_lib/common.dart';
 import 'package:zxing_lib/qrcode.dart';
@@ -15,10 +15,20 @@ Future<Result> parseResultFromInvoice(
   Uint8List image, [
   bool tryCrop = true,
 ]) async {
-  return compute(_parseResultFromInvoice, {
+  final param = {
     'image': image,
     'tryCrop': tryCrop,
-  });
+  };
+
+  if (kIsWeb || Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // Decoding image with dart:ui on non-main-isolate causes exception on Windows,
+    // I guess it could happen on other desktop platforms,
+    // so we cannot use compute to do async decoding.
+    // the issue can be found here: https://github.com/flutter/flutter/issues/10647
+    return _parseResultFromInvoice(param);
+  } else {
+    return compute(_parseResultFromInvoice, param);
+  }
 }
 
 final _reader = QRCodeReader();
