@@ -37,7 +37,9 @@ dependencies:
   package_info_plus: ^1.0.3
   flutter_markdown: ^0.6.2
   intl: ^0.17.0
-  
+  file_selector: ^0.8.2
+  file_selector_windows: ^0.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
