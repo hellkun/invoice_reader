@@ -13,6 +13,7 @@ class FilePickerImpl implements FilePicker {
 }
 
 final kTypeGroups = [
+  XTypeGroup(label: '所有支持的格式', extensions: ['jpg', 'png', 'pdf']),
   XTypeGroup(label: '图片', extensions: ['jpg', 'png']),
   XTypeGroup(label: '文档', extensions: ['pdf']),
 ];
