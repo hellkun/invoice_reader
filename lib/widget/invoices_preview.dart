@@ -1,10 +1,10 @@
 import 'dart:math';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:invoice_reader/model/invoice.dart';
+import 'package:invoice_reader/utils/picker/file_picker.dart';
 import 'package:invoice_reader/utils/reader/file_reader.dart';
 import 'package:logging/logging.dart';
 
@@ -199,7 +199,13 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
 
   /// 选择文件
   void _pickFile() async {
-    final pickResult = await FilePicker.platform.pickFiles(
+    final files = await FilePicker().pickFiles();
+
+    files.map(_readXFile).forEach((element) async {
+      widget.onAdd?.call(await element);
+    });
+
+    /* final pickResult = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowMultiple: true,
       allowedExtensions: const [
@@ -215,10 +221,10 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
 
     pickResult.files.map(_readPlatformFile).forEach((element) async {
       widget.onAdd?.call(await element);
-    });
+    }); */
   }
 
-  Future<InvoiceSource> _readPlatformFile(PlatformFile file) {
+  /* Future<InvoiceSource> _readPlatformFile(PlatformFile file) {
     if (file.bytes != null) {
       return SynchronousFuture(InvoiceSource(file.bytes!,
           name: file.name,
@@ -229,6 +235,17 @@ class _InvoiceInteractionZoneState extends State<InvoiceInteractionZone> {
       assert(file.path != null); // cannot be on web
       return _invoiceReader.read(file.path);
     }
+  } */
+
+  Future<InvoiceSource> _readXFile(XFile file) async {
+    final bytes = await file.readAsBytes();
+    return InvoiceSource(
+      bytes,
+      name: file.name,
+      type: file.name.endsWith('.pdf')
+          ? InvoiceSourceType.pdf
+          : InvoiceSourceType.image,
+    );
   }
 
   void _onContentDropped(dynamic content) {
