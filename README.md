@@ -4,7 +4,8 @@
 
 一个基于Flutter实现的功能简单的电子发票解析器，主要通过读取电子发票的二维码解析发票信息。
 
-依托Flutter的跨平台能力，理论上支持Android/iOS/Web/Windows/macOS端运行，但目前主要使用场景集中于Web，其它平台未测试。
+依托Flutter的跨平台能力，理论上支持Android/iOS/Web/Windows/~~~macOS~~~端运行，但目前主要使用场景集中于Web。
+Windows/macOS目前无法支持，由于引入的文件选择器插件file_picker只支持Android/iOS/Web。
 
 支持的发票源格式：
 + 图片（JPG、PNG等）
@@ -14,10 +15,21 @@
 + 包含发票信息的Excel表格
 + 重命名后的发票文件
 
+支持的运行平台/方式：
++ Web，支持通过H5或Chrome/Edge扩展的方式运行
++ Windows
++ Android
+
+iOS应该可以运行，但未测试
+
 主要就是自用项目，降低手工整理报销凭证的复杂度。
 
 ## 更新日志
 [查看](assets/CHANGES.md)
+
+## 已知问题
++ [ ] Windows下的版本号显示有问题
++ [ ] 可以重复添加相同信息的发票源文件
 
 ## 计划
 + [ ] 处理不同文件中包含相同发票信息的情况
